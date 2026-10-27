@@ -229,5 +229,5 @@ app.whenReady().then(async () => {
   globalShortcut.register('CommandOrControl+Shift+A', () => { win.isVisible() ? win.hide() : win.showInactive(); menu(); });
 });
 app.on('window-all-closed', () => {});
-app.on('before-quit', () => { quitting = true; clearTimeout(positionSaveTimer); if (!SELFTEST) save(); clearInterval(mouseTimer); clearInterval(refreshTimer); clearInterval(applicationsTimer); globalShortcut.unregisterAll(); server?.close(); core.shutdown(); });
+app.on('before-quit', () => { quitting = true; clearTimeout(positionSaveTimer); if (!SELFTEST) save(); clearInterval(mouseTimer); clearInterval(refreshTimer); clearInterval(applicationsTimer); globalShortcut.unregisterAll(); server?.close(); });
 app.on('activate', () => win?.showInactive());

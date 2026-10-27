@@ -20,11 +20,10 @@ const contents = path.join(output, 'Contents'), resources = path.join(contents, 
 fs.mkdirSync(core, { recursive: true });
 for (const file of ['main.js', 'preload.js', 'package.json']) fs.copyFileSync(path.join(desktop, file), path.join(bundle, file));
 fs.cpSync(native, path.join(bundle, 'native'), { recursive: true, force: true });
-for (const file of ['server.js', 'codex.js', 'kokoro.js', 'kokoro-worker.js', 'demo.js', 'LICENSE']) fs.copyFileSync(path.join(root, file), path.join(core, file));
+for (const file of ['server.js', 'codex.js', 'LICENSE']) fs.copyFileSync(path.join(root, file), path.join(core, file));
 for (const dir of ['public', 'overlay']) fs.cpSync(path.join(root, dir), path.join(core, dir), { recursive: true, force: true });
 fs.mkdirSync(path.join(core, 'media'), { recursive: true });
-for (const file of ['icon.png', 'tray.png', 'tray@2x.png']) fs.copyFileSync(path.join(root, 'media', file), path.join(core, 'media', file));
-fs.cpSync(path.join(root, 'examples/cats'), path.join(core, 'examples/cats'), { recursive: true, force: true });
+for (const file of ['tray.png', 'tray@2x.png']) fs.copyFileSync(path.join(root, 'media', file), path.join(core, 'media', file));
 fs.copyFileSync(path.join(desktop, 'icon.icns'), path.join(resources, 'electron.icns'));
 const plist = path.join(contents, 'Info.plist');
 const set = (key, value) => execFileSync('/usr/libexec/PlistBuddy', ['-c', `Set :${key} ${value}`, plist]);

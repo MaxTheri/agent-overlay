@@ -1,9 +1,9 @@
 // test/codex.test.js: Codex sessions (codex.js) read as a call, next to a Claude Code session that must stay exactly as it was. Made-up rollout files in the two formats, a real server on a free port.
 const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), os = require('os'), path = require('path'), http = require('http');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'as-codex-')), CX = path.join(tmp, 'codex'), PROJECTS = path.join(tmp, 'projects');
-process.env.AGENT_STANDUP_PREFS = path.join(tmp, 'prefs.json'); process.env.AGENT_STANDUP_KOKORO_DIR = path.join(tmp, 'kokoro'); process.env.AGENT_STANDUP_PROJECTS = PROJECTS; process.env.AGENT_STANDUP_CODEX = CX;
+process.env.AGENT_STANDUP_PROJECTS = PROJECTS; process.env.AGENT_STANDUP_CODEX = CX;
 const get = (port, p) => new Promise((res, rej) => http.get({ port, path: p }, (x) => { let b = ''; x.on('data', (d) => { b += d; }); x.on('end', () => res({ status: x.statusCode, json: () => JSON.parse(b) })); }).on('error', rej));
-const serve = async () => { const srv = require('../server.js').start(0); await new Promise((r) => srv.once('listening', r)); return { port: srv.address().port, stop: () => { srv.close(); require('../server.js').shutdown(); } }; };
+const serve = async () => { const srv = require('../server.js').start(0); await new Promise((r) => srv.once('listening', r)); return { port: srv.address().port, stop: () => { srv.close(); } }; };
 
 // ---- the files. Times are a few minutes ago, so the sessions count as recent.
 const T0 = Date.now() - 5 * 60e3; let clock = T0, ord = 0;

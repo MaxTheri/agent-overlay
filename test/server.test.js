@@ -1,7 +1,7 @@
-// test/server.test.js: the settings file, session stickiness, the cross-site guard and the pictures of a session, against a real server on a free port
+// test/server.test.js: the overlay's static files, session timelines, the cross-site guard and the pictures of a session, against a real server on a free port
 const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), os = require('os'), path = require('path'), http = require('http');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'as-test-'));
-process.env.AGENT_STANDUP_PREFS = path.join(tmp, 'prefs.json'); process.env.AGENT_STANDUP_KOKORO_DIR = path.join(tmp, 'kokoro'); process.env.AGENT_STANDUP_PROJECTS = path.join(tmp, 'projects');
+process.env.AGENT_STANDUP_PROJECTS = path.join(tmp, 'projects');
 const get = (port, p, headers = {}, method = 'GET', body) => new Promise((res, rej) => { const r = http.request({ port, path: p, method, headers }, (x) => { let b = '', n = 0; x.on('data', (d) => { b += d; n += d.length; }); x.on('end', () => res({ status: x.statusCode, body: b, type: x.headers['content-type'], bytes: n })); }); r.on('error', rej); if (body) r.write(body); r.end(); });
 test('overlay loads its discovered catalog and nested animation PNGs over HTTP', async () => {
   const srv = require('../server.js').start(0); await new Promise(r => srv.once('listening', r)); const port = srv.address().port;
@@ -18,7 +18,7 @@ test('overlay loads its discovered catalog and nested animation PNGs over HTTP',
     assert.equal(image.type, 'image/png');
     assert.ok(image.bytes > 1000);
     assert.equal((await get(port, '/animals/%63apybara/activity/keyboard.png')).status, 200);
-  } finally { srv.close(); require('../server.js').shutdown(); }
+  } finally { srv.close(); }
 });
 test('Claude reasoning keeps the turn open until an explicit final answer', async () => {
   const dir = path.join(tmp, 'projects', '-reasoning'); fs.mkdirSync(dir, { recursive: true });
@@ -36,19 +36,7 @@ test('Claude reasoning keeps the turn open until an explicit final answer', asyn
     await new Promise(resolve => setTimeout(resolve, 1300));
     const final = JSON.parse((await get(port, '/api/board')).body).find(row => row.id === 'reasoning');
     assert.equal(final.turnOpen, false); assert.equal(final.state, 'turn');
-  } finally { srv.close(); require('../server.js').shutdown(); }
-});
-test('settings are kept in a file; cross-site writes are refused', async () => {
-  const srv = require('../server.js').start(0); await new Promise((r) => srv.once('listening', r)); const port = srv.address().port;
-  try {
-    assert.match((await get(port, '/api/prefs.js')).body, /SAVED_PREFS = null/);
-    assert.equal((await get(port, '/api/prefs', { 'content-type': 'application/json' }, 'PUT', '{"lang":"fr","_t":5}')).status, 200);
-    assert.match((await get(port, '/api/prefs.js')).body, /"lang":"fr"/);
-    assert.equal((await get(port, '/api/prefs', { 'sec-fetch-site': 'cross-site' }, 'PUT', '{}')).status, 403);
-    assert.equal((await get(port, '/api/prefs', {}, 'PUT', '[1]')).status, 400);
-    assert.equal(JSON.parse((await get(port, '/api/kokoro')).body).installed, false);
-    assert.equal((await get(port, '/api/kokoro/install', { 'sec-fetch-site': 'cross-site' }, 'POST')).status, 403);
-  } finally { srv.close(); require('../server.js').shutdown(); }
+  } finally { srv.close(); }
 });
 test('pictures returned by tools are counted in the timeline and served from the transcript only', async () => {
   const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', pic = (type, data) => ({ type: 'image', source: { type: 'base64', media_type: type, data } });
@@ -66,7 +54,7 @@ test('pictures returned by tools are counted in the timeline and served from the
     assert.equal((await media('agent=..&tool=toolu_pic&n=0')).status, 400);
     assert.equal((await get(port, '/api/media?proj=..&id=s1&agent=main&tool=toolu_pic&n=0')).status, 400);
     assert.equal((await get(port, '/api/media?proj=-p&id=s1&agent=main&tool=toolu_pic&n=0', { 'sec-fetch-site': 'cross-site' })).status, 403);
-  } finally { srv.close(); require('../server.js').shutdown(); }
+  } finally { srv.close(); }
 });
 test('an order typed while the lead is working is part of the call', async () => {
   const at = (s) => `2026-01-01T00:00:0${s}Z`, queued = (s, prompt, origin) => ({ type: 'attachment', timestamp: at(s), attachment: { type: 'queued_command', prompt, origin, commandMode: origin.kind === 'human' ? 'prompt' : 'task-notification' } });
@@ -77,14 +65,14 @@ test('an order typed while the lead is working is part of the call', async () =>
   try {
     const said = JSON.parse((await get(port, '/api/session?proj=-q&id=s2')).body).events.filter((e) => e.kind === 'user' || e.kind === 'say').map((e) => [e.agent, e.text]);
     assert.deepEqual(said, [['user', 'first order'], ['user', 'order sent meanwhile'], ['main', 'On it.']]);
-  } finally { srv.close(); require('../server.js').shutdown(); }
+  } finally { srv.close(); }
 });
 // ---- 1.25.7: a live feed that loses nothing, the end of the lead's turn, transcripts of other shapes, requests that used to stop the server
 const wait = (ms) => new Promise((r) => setTimeout(r, ms)), at = (s) => new Date(Date.UTC(2026, 0, 1, 0, 0, 0) + s * 1000).toISOString(), line = (r) => JSON.stringify(r) + '\n';
 const said = (s, text, o = {}) => ({ type: 'assistant', timestamp: at(s), message: { id: o.id || 'm' + s, stop_reason: o.stop === undefined ? null : o.stop, content: [{ type: o.thinking ? 'thinking' : 'text', [o.thinking ? 'thinking' : 'text']: text }] } });
 const used = (s, id, name, input, o = {}) => ({ type: 'assistant', timestamp: at(s), message: { id: o.id || 'm' + s, stop_reason: 'tool_use', content: [{ type: 'tool_use', id, name, input }] } });
 const typed = (s, content, o = {}) => ({ type: 'user', timestamp: at(s), ...o, message: { role: 'user', content } }), result = (s, id, content, o = {}) => typed(s, [{ type: 'tool_result', tool_use_id: id, content }], o);
-const serve = async () => { const srv = require('../server.js').start(0); await new Promise((r) => srv.once('listening', r)); return { srv, port: srv.address().port, stop: () => { srv.close(); require('../server.js').shutdown(); } }; };
+const serve = async () => { const srv = require('../server.js').start(0); await new Promise((r) => srv.once('listening', r)); return { srv, port: srv.address().port, stop: () => { srv.close(); } }; };
 const load = async (port, q) => JSON.parse((await get(port, '/api/session?' + q)).body);
 test('a live call followed record by record ends with exactly what a fresh load shows', async () => {
   const dir = path.join(tmp, 'projects', '-f'), main = path.join(dir, 's.jsonl'), sub = path.join(dir, 's', 'subagents', 'agent-a1.jsonl'); fs.mkdirSync(path.dirname(sub), { recursive: true });
@@ -164,18 +152,18 @@ test('compaction summaries, workflow agents, titles and a transcript rewritten i
     const again = await load(port, q); assert.notEqual(again.ep, tl.ep); assert.deepEqual(again.events.filter((e) => e.agent === 'main' || e.agent === 'user').filter((e) => e.kind !== 'order').map((e) => e.kind + (e.end ? ' end' : '')), ['user', 'say', 'say end']);
   } finally { stop(); }
 });
-test('no request stops the server; another site cannot read the settings', async () => {
+test('no request stops the server; another site cannot read the pictures', async () => {
   const dir = path.join(tmp, 'projects', '-l'); fs.mkdirSync(path.join(dir, 's', 'subagents'), { recursive: true }); fs.writeFileSync(path.join(dir, 's.jsonl'), line(typed(0, 'hello')));
   let links = true; try { fs.symlinkSync(path.join(dir, 'gone.jsonl'), path.join(dir, 'dead.jsonl')); fs.symlinkSync(path.join(dir, 'gone.jsonl'), path.join(dir, 's', 'subagents', 'agent-dead.jsonl')); } catch { links = false; }   // links that point nowhere (not allowed on every Windows account)
   const { port, stop } = await serve(), raw = (text) => new Promise((res, rej) => { const s = require('net').connect(port, '127.0.0.1', () => s.write(text)); let b = ''; s.on('data', (d) => { b += d; }); s.on('error', rej); s.on('close', () => res(b)); setTimeout(() => s.destroy(), 1500); });
   try {
     assert.match(await raw(`GET // HTTP/1.1\r\nHost: localhost:${port}\r\nConnection: close\r\n\r\n`), /^HTTP\/1\.1 400 /);   // used to be an exception outside any try: the process died
-    for (const p of ['/%', '/..%2f..%2fetc/passwd', '/api/session?proj=%00&id=%ff', '/api/media', '/api/tts?text=hi&voice=' + 'x'.repeat(300), '/characters/%', '/packs/cats/..%2f..%2fserver.js']) assert.ok((await get(port, p)).status >= 400, p);
+    for (const p of ['/%', '/..%2f..%2fetc/passwd', '/api/session?proj=%00&id=%ff', '/api/media']) assert.ok((await get(port, p)).status >= 400, p);
     for (const p of ['/api/sessions', '/api/projects', '/api/current', '/api/current?proj=-l', '/api/current?proj=..&id=..&sproj=..&sid=..', '/api/board', '/api/session?proj=-l&id=s']) assert.equal((await get(port, p)).status, 200, p + (links ? ' with a dangling link next to the transcripts' : ''));
     assert.deepEqual(JSON.parse((await get(port, '/api/sessions')).body).filter((r) => r.proj === '-l').map((r) => r.id), ['s']); assert.equal(JSON.parse((await get(port, '/api/current?proj=-l')).body).id, 's');
-    assert.equal((await get(port, '/api/prefs.js', { 'sec-fetch-site': 'cross-site' })).status, 403); assert.equal((await get(port, '/api/prefs.js', { 'sec-fetch-site': 'same-site' })).status, 403);   // a <script src> on another site's page
-    assert.equal((await get(port, '/api/prefs.js', { 'sec-fetch-site': 'same-origin' })).status, 200); assert.equal((await get(port, '/api/prefs.js')).status, 200);
-    assert.equal((await get(port, '/')).status, 200);   // still there
+    const media = '/api/media?proj=-l&id=s&agent=main&tool=toolu_xxxxxx&n=0'; assert.equal((await get(port, media, { 'sec-fetch-site': 'cross-site' })).status, 403); assert.equal((await get(port, media, { 'sec-fetch-site': 'same-site' })).status, 403);   // an <img> on another site's page
+    assert.equal((await get(port, media, { 'sec-fetch-site': 'same-origin' })).status, 404);
+    assert.equal((await get(port, '/')).status, 200);   // still there: the overlay page
   } finally { stop(); }
 });
 test('releasing inactive timelines preserves retained feeds and rereads evicted sessions correctly', () => {
@@ -199,5 +187,5 @@ test('the reasoning before a line or a call rides on it when the transcript keep
   try {
     const ev = JSON.parse((await get(port, '/api/session?proj=-th&id=s3')).body).events.filter((e) => e.kind === 'tools' || e.kind === 'say');
     assert.deepEqual(ev.map((e) => [e.kind, e.th || null]), [['tools', 'The query scans the whole table.\nI should check the index.'], ['say', null]]);
-  } finally { srv.close(); require('../server.js').shutdown(); }
+  } finally { srv.close(); }
 });
