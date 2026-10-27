@@ -8,11 +8,12 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 fs.rmSync(core, { recursive: true, force: true }); fs.mkdirSync(path.join(core, 'media'), { recursive: true });
 for (const f of ['server.js', 'codex.js', 'kokoro.js', 'kokoro-worker.js', 'demo.js', 'LICENSE']) fs.copyFileSync(path.join(root, f), path.join(core, f));
 fs.cpSync(path.join(root, 'public'), path.join(core, 'public'), { recursive: true }); for (const e of ['cats']) fs.cpSync(path.join(root, 'examples', e), path.join(core, 'examples', e), { recursive: true }); for (const f of ['icon.png', 'tray.png', 'tray@2x.png']) fs.copyFileSync(path.join(root, 'media', f), path.join(core, 'media', f));
+fs.cpSync(path.join(root, 'overlay'), path.join(core, 'overlay'), { recursive: true });
 if (!fs.existsSync(path.join(d, 'node_modules/electron'))) execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install', '--no-audit', '--no-fund'], { cwd: d, stdio: 'inherit', shell: process.platform === 'win32' });
-const appName = process.platform === 'win32' ? '"Agent Standup"' : 'Agent Standup';   // quoted on Windows, where the command goes through a shell and would split the name
-const args = ['--yes', '@electron/packager', d, appName, `--platform=${process.platform}`, `--arch=${arch}`, `--out=${out}`, '--overwrite', '--prune=true', '--asar', '--app-bundle-id=com.doublegeste.agentstandup', '--ignore=^/node_modules/\\.cache'];
+const appName = process.platform === 'win32' ? '"Agent Overlay"' : 'Agent Overlay';
+const args = ['--yes', '@electron/packager', d, appName, `--platform=${process.platform}`, `--arch=${arch}`, `--out=${out}`, '--overwrite', '--prune=true', '--asar', '--app-bundle-id=local.agentoverlay.desktop', '--ignore=^/node_modules/\\.cache'];
 if (process.platform !== 'darwin') args.push('--executable-name=agent-standup');   // no space in the executable name on Windows and Linux
 if (fs.existsSync(path.join(d, process.platform === 'darwin' ? 'icon.icns' : 'icon.ico'))) args.push(`--icon=${path.join(d, 'icon')}`);
 execFileSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', args, { stdio: 'inherit', shell: process.platform === 'win32' });
-if (process.platform === 'darwin') { const app = path.join(out, `Agent Standup-darwin-${arch}`, 'Agent Standup.app'); spawnSync('codesign', ['--force', '--deep', '-s', '-', app], { stdio: 'inherit' }); console.log('built', app); }
+if (process.platform === 'darwin') { const app = path.join(out, `Agent Overlay-darwin-${arch}`, 'Agent Overlay.app'); const sign = spawnSync('codesign', ['--force', '--deep', '-s', '-', app], { stdio: 'inherit' }); if (sign.status !== 0) process.exit(sign.status || 1); console.log('built', app); }
 else console.log('built in', out);

@@ -18,6 +18,9 @@
     "onStartupFinished"
   ],
   "scripts": {
+    "overlay": "npm --prefix desktop start",
+    "overlay:demo": "npm --prefix desktop run demo",
+    "overlay:build": "node scripts/build-overlay-mac.js",
     "start": "node server.js",
     "package": "npx --yes @vscode/vsce package --allow-missing-repository --skip-license",
     "landing": "node scripts/build-landing.js",

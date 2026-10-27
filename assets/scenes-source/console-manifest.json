@@ -1,0 +1,30 @@
+[
+  {
+    "source": "assets/scenes-source/console-ratel-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "assets/scenes-source/console-ratel-16.png",
+    "preview": "assets/scenes-source/console-ratel-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/console-renard-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "assets/scenes-source/console-renard-16.png",
+    "preview": "assets/scenes-source/console-renard-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/console-firefox-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "assets/scenes-source/console-firefox-16.png",
+    "preview": "assets/scenes-source/console-firefox-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/console-capybara-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "assets/scenes-source/console-capybara-16.png",
+    "preview": "assets/scenes-source/console-capybara-preview.png"
+  }
+]

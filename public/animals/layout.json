@@ -1,0 +1,414 @@
+{
+  "capybara/activity/book.png": {
+    "height": 222,
+    "left": 36,
+    "right": 242,
+    "scale": 0.9819819819819819
+  },
+  "capybara/activity/classic.png": {
+    "height": 222,
+    "left": 35,
+    "right": 246,
+    "scale": 0.9819819819819819
+  },
+  "capybara/activity/keyboard.png": {
+    "height": 221,
+    "left": 35,
+    "right": 246,
+    "scale": 0.9864253393665159
+  },
+  "capybara/activity/stretch.png": {
+    "height": 221,
+    "left": 36,
+    "right": 247,
+    "scale": 0.9864253393665159
+  },
+  "capybara/thinking/problem.png": {
+    "height": 221,
+    "left": 10,
+    "right": 244,
+    "scale": 0.9864253393665159
+  },
+  "capybara/thinking/thought.png": {
+    "height": 222,
+    "left": 37,
+    "right": 244,
+    "scale": 0.9819819819819819
+  },
+  "capybara/waiting/wave-classic.png": {
+    "height": 221,
+    "left": 8,
+    "right": 243,
+    "scale": 0.9864253393665159
+  },
+  "capybara/waiting/wave.png": {
+    "height": 221,
+    "left": 20,
+    "right": 246,
+    "scale": 0.9864253393665159
+  },
+  "capybara/end/console.png": {
+    "height": 218,
+    "left": 8,
+    "right": 247,
+    "scale": 1,
+    "baseline": 224,
+    "deskY": 197
+  },
+  "capybara/end/intro.png": {
+    "height": 218,
+    "left": 9,
+    "right": 246,
+    "scale": 1,
+    "baseline": 224,
+    "deskY": 197
+  },
+  "capybara/common/coffee.png": {
+    "height": 222,
+    "left": 38,
+    "right": 242,
+    "scale": 0.9819819819819819
+  },
+  "capybara/common/paw-movement.png": {
+    "height": 221,
+    "left": 36,
+    "right": 247,
+    "scale": 0.9864253393665159
+  },
+  "capybara/common/sulk.png": {
+    "height": 221,
+    "left": 18,
+    "right": 248,
+    "scale": 0.9864253393665159
+  },
+  "../scenes/reactions/capybara.png": {
+    "height": 218,
+    "left": 19,
+    "right": 238,
+    "scale": 1
+  },
+  "../scenes/impacts/capybara.png": {
+    "height": 218,
+    "left": 13,
+    "right": 244,
+    "scale": 1
+  },
+  "../scenes/departures/capybara.png": {
+    "height": 169,
+    "left": 6,
+    "right": 250,
+    "scale": 1.2899408284023668
+  },
+  "firefox/activity/book.png": {
+    "height": 222,
+    "left": 32,
+    "right": 249,
+    "scale": 0.9819819819819819
+  },
+  "firefox/activity/classic.png": {
+    "height": 221,
+    "left": 26,
+    "right": 251,
+    "scale": 0.9864253393665159
+  },
+  "firefox/activity/keyboard.png": {
+    "height": 222,
+    "left": 18,
+    "right": 233,
+    "scale": 0.9819819819819819
+  },
+  "firefox/activity/stretch.png": {
+    "height": 221,
+    "left": 7,
+    "right": 233,
+    "scale": 0.9864253393665159
+  },
+  "firefox/thinking/problem.png": {
+    "height": 221,
+    "left": 16,
+    "right": 244,
+    "scale": 0.9864253393665159
+  },
+  "firefox/thinking/thought.png": {
+    "height": 222,
+    "left": 30,
+    "right": 249,
+    "scale": 0.9819819819819819
+  },
+  "firefox/waiting/wave-classic.png": {
+    "height": 222,
+    "left": 13,
+    "right": 249,
+    "scale": 0.9819819819819819
+  },
+  "firefox/waiting/wave.png": {
+    "height": 222,
+    "left": 13,
+    "right": 230,
+    "scale": 0.9819819819819819
+  },
+  "firefox/end/console.png": {
+    "height": 179,
+    "left": 16,
+    "right": 237,
+    "scale": 1.217877094972067,
+    "baseline": 224,
+    "deskY": 208
+  },
+  "firefox/end/intro.png": {
+    "height": 179,
+    "left": 6,
+    "right": 250,
+    "scale": 1.217877094972067,
+    "baseline": 224,
+    "deskY": 208
+  },
+  "firefox/common/coffee.png": {
+    "height": 222,
+    "left": 20,
+    "right": 244,
+    "scale": 0.9819819819819819
+  },
+  "firefox/common/paw-movement.png": {
+    "height": 221,
+    "left": 7,
+    "right": 233,
+    "scale": 0.9864253393665159
+  },
+  "firefox/common/sulk.png": {
+    "height": 222,
+    "left": 15,
+    "right": 232,
+    "scale": 0.9819819819819819
+  },
+  "../scenes/reactions/firefox.png": {
+    "height": 208,
+    "left": 7,
+    "right": 250,
+    "scale": 1.0480769230769231
+  },
+  "../scenes/impacts/firefox.png": {
+    "height": 197,
+    "left": 6,
+    "right": 250,
+    "scale": 1.1065989847715736
+  },
+  "../scenes/departures/firefox.png": {
+    "height": 168,
+    "left": 6,
+    "right": 250,
+    "scale": 1.2976190476190477
+  },
+  "ratel/activity/book.png": {
+    "height": 218,
+    "left": 27,
+    "right": 245,
+    "scale": 1
+  },
+  "ratel/activity/classic.png": {
+    "height": 217,
+    "left": 25,
+    "right": 250,
+    "scale": 1.0046082949308757
+  },
+  "ratel/activity/keyboard.png": {
+    "height": 219,
+    "left": 18,
+    "right": 249,
+    "scale": 0.9954337899543378
+  },
+  "ratel/activity/stretch.png": {
+    "height": 218,
+    "left": 10,
+    "right": 249,
+    "scale": 1
+  },
+  "ratel/thinking/problem.png": {
+    "height": 218,
+    "left": 8,
+    "right": 247,
+    "scale": 1
+  },
+  "ratel/thinking/thought.png": {
+    "height": 219,
+    "left": 24,
+    "right": 248,
+    "scale": 0.9954337899543378
+  },
+  "ratel/waiting/wave-classic.png": {
+    "height": 218,
+    "left": 5,
+    "right": 243,
+    "scale": 1
+  },
+  "ratel/waiting/wave.png": {
+    "height": 218,
+    "left": 7,
+    "right": 249,
+    "scale": 1
+  },
+  "ratel/end/console.png": {
+    "height": 204,
+    "left": 11,
+    "right": 250,
+    "scale": 1.0686274509803921,
+    "baseline": 224,
+    "deskY": 210
+  },
+  "ratel/end/intro.png": {
+    "height": 203,
+    "left": 6,
+    "right": 248,
+    "scale": 1.0738916256157636,
+    "baseline": 224,
+    "deskY": 210
+  },
+  "ratel/common/coffee.png": {
+    "height": 218,
+    "left": 21,
+    "right": 245,
+    "scale": 1
+  },
+  "ratel/common/head-scratch.png": {
+    "height": 218,
+    "left": 8,
+    "right": 247,
+    "scale": 1
+  },
+  "ratel/common/paw-movement.png": {
+    "height": 218,
+    "left": 10,
+    "right": 249,
+    "scale": 1
+  },
+  "ratel/common/sulk.png": {
+    "height": 218,
+    "left": 22,
+    "right": 251,
+    "scale": 1
+  },
+  "../scenes/reactions/ratel.png": {
+    "height": 218,
+    "left": 14,
+    "right": 242,
+    "scale": 1
+  },
+  "../scenes/impacts/ratel.png": {
+    "height": 211,
+    "left": 6,
+    "right": 250,
+    "scale": 1.033175355450237
+  },
+  "../scenes/departures/ratel.png": {
+    "height": 165,
+    "left": 6,
+    "right": 250,
+    "scale": 1.3212121212121213
+  },
+  "renard/activity/book.png": {
+    "height": 222,
+    "left": 37,
+    "right": 240,
+    "scale": 0.9819819819819819
+  },
+  "renard/activity/classic.png": {
+    "height": 222,
+    "left": 42,
+    "right": 240,
+    "scale": 0.9819819819819819
+  },
+  "renard/activity/keyboard.png": {
+    "height": 221,
+    "left": 46,
+    "right": 244,
+    "scale": 0.9864253393665159
+  },
+  "renard/activity/stretch.png": {
+    "height": 221,
+    "left": 9,
+    "right": 244,
+    "scale": 0.9864253393665159
+  },
+  "renard/thinking/problem.png": {
+    "height": 221,
+    "left": 23,
+    "right": 239,
+    "scale": 0.9864253393665159
+  },
+  "renard/thinking/thought.png": {
+    "height": 222,
+    "left": 43,
+    "right": 241,
+    "scale": 0.9819819819819819
+  },
+  "renard/waiting/wave-classic.png": {
+    "height": 222,
+    "left": 20,
+    "right": 241,
+    "scale": 0.9819819819819819
+  },
+  "renard/waiting/wave.png": {
+    "height": 221,
+    "left": 27,
+    "right": 243,
+    "scale": 0.9864253393665159
+  },
+  "renard/end/console.png": {
+    "height": 218,
+    "left": 13,
+    "right": 243,
+    "scale": 1,
+    "baseline": 224,
+    "deskY": 187
+  },
+  "renard/end/intro.png": {
+    "height": 218,
+    "left": 15,
+    "right": 243,
+    "scale": 1,
+    "baseline": 224,
+    "deskY": 187
+  },
+  "renard/common/coffee.png": {
+    "height": 221,
+    "left": 41,
+    "right": 240,
+    "scale": 0.9864253393665159
+  },
+  "renard/common/head-scratch.png": {
+    "height": 221,
+    "left": 23,
+    "right": 239,
+    "scale": 0.9864253393665159
+  },
+  "renard/common/paw-movement.png": {
+    "height": 221,
+    "left": 9,
+    "right": 244,
+    "scale": 0.9864253393665159
+  },
+  "renard/common/sulk.png": {
+    "height": 221,
+    "left": 53,
+    "right": 246,
+    "scale": 0.9864253393665159
+  },
+  "../scenes/reactions/renard.png": {
+    "height": 218,
+    "left": 25,
+    "right": 230,
+    "scale": 1
+  },
+  "../scenes/impacts/renard.png": {
+    "height": 218,
+    "left": 10,
+    "right": 245,
+    "scale": 1
+  },
+  "../scenes/departures/renard.png": {
+    "height": 201,
+    "left": 6,
+    "right": 250,
+    "scale": 1.0845771144278606
+  }
+}

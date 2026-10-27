@@ -3,6 +3,41 @@ const test = require('node:test'), assert = require('node:assert'), fs = require
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'as-test-'));
 process.env.AGENT_STANDUP_PREFS = path.join(tmp, 'prefs.json'); process.env.AGENT_STANDUP_KOKORO_DIR = path.join(tmp, 'kokoro'); process.env.AGENT_STANDUP_PROJECTS = path.join(tmp, 'projects');
 const get = (port, p, headers = {}, method = 'GET', body) => new Promise((res, rej) => { const r = http.request({ port, path: p, method, headers }, (x) => { let b = '', n = 0; x.on('data', (d) => { b += d; n += d.length; }); x.on('end', () => res({ status: x.statusCode, body: b, type: x.headers['content-type'], bytes: n })); }); r.on('error', rej); if (body) r.write(body); r.end(); });
+test('overlay loads its discovered catalog and nested animation PNGs over HTTP', async () => {
+  const srv = require('../server.js').start(0); await new Promise(r => srv.once('listening', r)); const port = srv.address().port;
+  try {
+    const page = await get(port, '/overlay.html');
+    assert.match(page.body, /animals\/catalog\.js/);
+    const response = await get(port, '/animals/catalog.js');
+    assert.equal(response.status, 200);
+    assert.equal(response.type, 'application/javascript');
+    const catalog = require('node:vm').runInNewContext(response.body + '\nAnimalCatalog');
+    assert.deepEqual(Object.keys(catalog.animals).sort(), ['capybara', 'firefox', 'ratel', 'renard']);
+    const image = await get(port, '/animals/' + catalog.animals.capybara.activity[0].file);
+    assert.equal(image.status, 200);
+    assert.equal(image.type, 'image/png');
+    assert.ok(image.bytes > 1000);
+    assert.equal((await get(port, '/animals/%63apybara/activity/keyboard.png')).status, 200);
+  } finally { srv.close(); require('../server.js').shutdown(); }
+});
+test('Claude reasoning keeps the turn open until an explicit final answer', async () => {
+  const dir = path.join(tmp, 'projects', '-reasoning'); fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, 'reasoning.jsonl'), timestamp = new Date(Date.now() - 12 * 60000).toISOString();
+  fs.writeFileSync(file, JSON.stringify({ type: 'assistant', timestamp,
+    message: { stop_reason: null, content: [{ type: 'thinking', thinking: 'Je cherche la solution.' }] } }) + '\n');
+  fs.utimesSync(file, new Date(timestamp), new Date(timestamp));
+  const srv = require('../server.js').start(0); await new Promise(r => srv.once('listening', r)); const port = srv.address().port;
+  try {
+    const rows = JSON.parse((await get(port, '/api/board')).body);
+    const row = rows.find(row => row.id === 'reasoning');
+    assert.equal(row.turnOpen, true); assert.equal(row.state, 'working');
+    fs.appendFileSync(file, JSON.stringify({ type: 'assistant', timestamp: new Date().toISOString(),
+      message: { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Voici la solution.' }] } }) + '\n');
+    await new Promise(resolve => setTimeout(resolve, 1300));
+    const final = JSON.parse((await get(port, '/api/board')).body).find(row => row.id === 'reasoning');
+    assert.equal(final.turnOpen, false); assert.equal(final.state, 'turn');
+  } finally { srv.close(); require('../server.js').shutdown(); }
+});
 test('settings are kept in a file; cross-site writes are refused', async () => {
   const srv = require('../server.js').start(0); await new Promise((r) => srv.once('listening', r)); const port = srv.address().port;
   try {
@@ -142,6 +177,18 @@ test('no request stops the server; another site cannot read the settings', async
     assert.equal((await get(port, '/api/prefs.js', { 'sec-fetch-site': 'same-origin' })).status, 200); assert.equal((await get(port, '/api/prefs.js')).status, 200);
     assert.equal((await get(port, '/')).status, 200);   // still there
   } finally { stop(); }
+});
+test('releasing inactive timelines preserves retained feeds and rereads evicted sessions correctly', () => {
+  const core = require('../server.js'), dir = path.join(tmp, 'projects', '-memory');
+  fs.mkdirSync(dir, { recursive: true });
+  for (const id of ['one', 'two']) fs.writeFileSync(path.join(dir, id + '.jsonl'), line(typed(0, 'Question ' + id)) + line(said(1, 'Answer ' + id, { stop: 'end_turn' })));
+  const one = core.timeline('-memory', 'one'), two = core.timeline('-memory', 'two');
+  core.retainTimelines(new Set(['-memory/two']));
+  assert.equal(core.timeline('-memory', 'two').ep, two.ep);
+  const reloaded = core.timeline('-memory', 'one');
+  assert.notEqual(reloaded.ep, one.ep);
+  assert.deepEqual(reloaded.events, one.events);
+  core.retainTimelines(new Set());
 });
 test('the reasoning before a line or a call rides on it when the transcript keeps its text', async () => {
   const at = (n) => `2026-01-01T00:00:0${n}Z`, asst = (n, id, content) => ({ type: 'assistant', timestamp: at(n), message: { id, content } });

@@ -1,0 +1,10 @@
+{
+  "tool": "built-in imagegen",
+  "prompt": "Use case: illustration-story. Asset: production animation sprite sheet, EXACTLY EIGHT chronological distinct full-body drawings in a uniform 4 columns x 2 rows grid, read left to right then next row. Transparent background, no grid lines, labels, desk, furniture, keyboard or scenery. Match the reference character identity, clothing, proportions and polished hand-drawn 2D style exactly. New action: a small crumpled white paper ball hits the CROWN OF THE HEAD from above. Frame1: contact on crown, eyes squeeze shut, ears flatten, shoulders and head squash down. Frame2: deeper recoil with white paper ball visibly compressed on top of head. Frame3: paper bounces a little, startled wide eyes, paws fly up toward head. Frame4: one paw rubs crown where paper landed, shocked expression. Frame5: both paws near head, disbelieving shocked look upward. Frame6: rub crown, wince and nervous glance. Frame7: release head, tense shoulders, starts lowering paws toward keyboard height. Frame8: hunch forward, worried eyes, both paws ready to type at 67% of cell height. The ball touches the head in frames1-2, bounces in3, then leaves in4; never floating unrelated to head. Comical light harmless impact, no injury. Fixed full-body scale, feet on same baseline at 94% cell height, generous transparent cell margins, same 3/4 front view facing slightly LEFT as reference. No text, no other characters. Reference sheet is identity reference only; create the new head-impact drawings, DO NOT copy its existing surprised or typing poses.",
+  "characters": [
+    "ratel",
+    "renard",
+    "firefox",
+    "capybara"
+  ]
+}

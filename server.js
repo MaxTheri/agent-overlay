@@ -134,7 +134,12 @@ function stamp(proj, id) {
   return n;
 }
 const tlCache = new Map();   // "proj/id" → { st (file stamp), tl, at, ms, files[], feed, sq, json?, gz?, idle? }
-const MAX_CACHED_SESSIONS = 3;
+const MAX_CACHED_SESSIONS = process.env.AGENT_OVERLAY === '1' ? 32 : 3;
+function retainTimelines(keys) {
+  for (const key of tlCache.keys()) if (!keys.has(key)) tlCache.delete(key);
+  const retainedFiles = new Set([...tlCache.values()].flatMap(entry => entry.files));
+  for (const file of fileStates.keys()) if (!retainedFiles.has(file)) fileStates.delete(file);
+}
 function timelineEntry(proj, id) {
   const key = proj + '/' + id, st = stamp(proj, id), hit = tlCache.get(key), now = Date.now();
   if (hit && ((hit.st === st && !(hit.recentUntil && now > hit.recentUntil)) || now - hit.at < Math.max(250, hit.ms * 2))) {   // nothing was written (a sub-agent's 4-minute silence rule can flip without any file change); or a very big session, which is not rebuilt on every poll
@@ -175,18 +180,28 @@ const feedSince = (entry, after) => { const ev = entry.tl.events, sq = entry.sq,
 // ---- Board: one cheap row per recent session (state from the tail of its transcript), so many parallel sessions can be watched at once.
 const readTail = (file, bytes) => { const fd = fs.openSync(file, 'r'); try { const sz = fs.fstatSync(fd).size, n = Math.min(bytes, sz), buf = Buffer.alloc(n); fs.readSync(fd, buf, 0, n, sz - n); return { text: buf.toString('utf8'), cut: sz > bytes }; } finally { fs.closeSync(fd); } };
 const readHead = (file, bytes) => { const fd = fs.openSync(file, 'r'); try { const n = Math.min(bytes, fs.fstatSync(fd).size), buf = Buffer.alloc(n); fs.readSync(fd, buf, 0, n, 0); return buf.toString('utf8'); } finally { fs.closeSync(fd); } };
-const APPROVAL = /^(Edit|Write|MultiEdit|NotebookEdit)/, ASKS = /^(AskUserQuestion|ExitPlanMode)/, SUBTOOL = /^(Task|Agent)$/;
+const ASKS = /^(AskUserQuestion|ExitPlanMode)$/;
 const boardCache = new Map();   // file → { sig, parsed, title }
 let boardMemo = { at: 0, rows: [] };
 function parseTail(file, st) {
   const sig = st.mtimeMs + ':' + st.size, hit = boardCache.get(file); if (hit && hit.sig === sig) return hit;
   const { text, cut } = readTail(file, 192 * 1024), lines = text.split('\n'); if (cut) lines.shift();
-  const pend = new Map(); let lastType = null, lastTool = false, lastTs = 0, custom = (hit && hit.custom) || null, ai = (hit && hit.ai) || null, first = hit ? hit.first : undefined;
+  const pend = new Map(); let lastType = null, lastTool = false, lastTs = 0, turnOpen = hit?.turnOpen || false, turnStartedAt = hit?.turnStartedAt || 0, custom = (hit && hit.custom) || null, ai = (hit && hit.ai) || null, first = hit ? hit.first : undefined;
   for (const l of lines) {
     if (!l) continue; let r; try { r = JSON.parse(l); } catch { continue; }
     if (r.type === 'custom-title' && typeof r.customTitle === 'string') custom = r.customTitle; else if (r.type === 'ai-title' && typeof r.aiTitle === 'string') ai = r.aiTitle;   // a session is renamed, or named, long after its row was first shown: the latest one read wins
     const t = Date.parse(r.timestamp) || 0, bl = blocks(r);
     if (r.type === 'assistant' || r.type === 'user') { lastType = r.type; lastTool = bl.some((b) => b.type === 'tool_use'); if (t) lastTs = t; }
+    if (r.type === 'user' && !r.isMeta && !r.isCompactSummary && !bl.some(b => b.type === 'tool_result')) {
+      const prompt = bl.filter(b => b.type === 'text').map(b => b.text || '').join('\n').replace(HARNESS, '').trim();
+      if (/^\[Request interrupted/i.test(prompt)) turnOpen = false;
+      else if (prompt && !prompt.startsWith('<')) { turnOpen = true; turnStartedAt = t; }
+    }
+    if (r.type === 'assistant') {
+      const reason = r.message?.stop_reason;
+      if (reason === 'end_turn' || reason === 'stop_sequence') turnOpen = false;
+      else if (reason === null || reason === 'tool_use' || lastTool || bl.some(b => b.type === 'thinking')) turnOpen = true;
+    }
     for (const b of bl) { if (b.type === 'tool_use') pend.set(b.id, { name: b.name, ts: t }); else if (b.type === 'tool_result') pend.delete(b.tool_use_id); }
   }
   if (!hit && !custom) {   // first look at this file: a little further back than the lines read above, and without needing whole lines
@@ -194,7 +209,7 @@ function parseTail(file, st) {
     custom = un([...big.matchAll(/"type":"custom-title","customTitle":"((?:[^"\\]|\\.)*)"/g)].pop()); if (!ai) ai = un([...big.matchAll(/"type":"ai-title","aiTitle":"((?:[^"\\]|\\.)*)"/g)].pop());
   }
   if (!custom && !ai && first == null) first = firstPrompt(file) || (st.size > 64 * 1024 ? '' : null);   // '' = looked for and not there; a file that has just been created is looked at again
-  const out = { sig, title: custom || ai || first || null, custom, ai, first, lastType, lastTool, lastTs, pending: [...pend.values()] };   // a title the person typed wins over the generated one, and both over the first prompt
+  const out = { sig, title: custom || ai || first || null, custom, ai, first, lastType, lastTool, lastTs, turnOpen, turnStartedAt, pending: [...pend.values()] };   // a title the person typed wins over the generated one, and both over the first prompt
   boardCache.set(file, out); if (boardCache.size > 200) boardCache.delete(boardCache.keys().next().value); return out;
 }
 function firstPrompt(file) {   // the first thing the person typed, read record by record: a pattern over the raw text ran from a user record into the assistant's first answer and took that as the title
@@ -222,16 +237,17 @@ function boardRows0() {
   return rows.filter((r) => !r.cx).slice(0, 40).concat(rows.filter((r) => r.cx).slice(0, 20)).sort((a, b) => b.st.mtimeMs - a.st.mtimeMs).map(({ proj, id, st, cx }) => {
     if (cx) return codex.boardRow(cx, now);
     const file = path.join(ROOT, proj, id + '.jsonl'); let p; try { p = parseTail(file, st); } catch { p = { pending: [] }; }
-    const age = now - st.mtimeMs, lp = (p.pending || [])[(p.pending || []).length - 1]; let state = 'idle', tool = '', ageMs = age;
+    const age = now - st.mtimeMs, pending = p.pending || [], lp = pending.find(t => ASKS.test(t.name)) || pending.at(-1); let state = 'idle', tool = '', ageMs = age;
     if (age < 30 * 60e3) {
       if (lp) { ageMs = now - (lp.ts || st.mtimeMs); tool = lp.name;
-        state = SUBTOOL.test(lp.name) ? 'waiting' : (ASKS.test(lp.name) && ageMs > 4000) || (APPROVAL.test(lp.name) && ageMs > 15000) ? 'blocked' : 'working'; }
+        state = ASKS.test(lp.name) ? 'blocked' : 'working'; }
+      else if (p.turnOpen) state = 'working';
       else if (p.lastType === 'assistant' && !p.lastTool) state = 'turn';
       else state = age < 10 * 60e3 ? 'working' : 'idle';
     }
     let subActive = 0, subTotal = 0;
     for (const x of subFiles(proj, id)) { subTotal++; if (now - mtimeOf(x.file) < 90e3) subActive++; }
-    return { proj, id, title: p.title || id, mtime: st.mtimeMs, state, tool, ageMs, subActive, subTotal };
+    return { proj, id, title: p.title || id, mtime: st.mtimeMs, state, turnOpen: !!p.turnOpen && age < 30 * 60e3, turnStartedAt: p.turnStartedAt || 0, tool, ageMs, subActive, subTotal };
   });
 }
 // Settings live in a file, not only in the page's localStorage: the port changes between VS Code windows and reloads, and localStorage is per origin (port included).
@@ -571,7 +587,7 @@ function tts(text, voice, rate, engine) {
   ttsJobs.set(key, job); return job;
 }
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8', '.png': 'image/png' };
 
 // ---- Custom characters: the person's own pixel art replaces the drawn characters. Plain image files in one folder, nothing else is ever served from it.
 //   lead.png / claude.png → the lead · you.png → the human · any other image → a pool for the sub-agents · name-talk.png → optional open-mouth frame of name.png
@@ -610,6 +626,11 @@ function start(port = PORT) {
   };
   const textList = (x) => (Array.isArray(x) ? x : []).slice(0, 200).map((t) => String(t).slice(0, 2000));
   try {
+    if (url.pathname === '/animals/catalog.js') {
+      const catalog = require('./overlay/animal-catalog').catalog();
+      res.writeHead(200, { 'content-type': 'application/javascript', 'cache-control': 'no-store' });
+      return res.end('const AnimalCatalog = ' + JSON.stringify(catalog).replace(/</g, '\\u003c') + ';');
+    }
     if (url.pathname === '/api/translate' && req.method === 'POST') return readBody(async (body) => { try { json(await translate(textList(JSON.parse(body).texts))); } catch (e) { json({ error: String(e) }, 400); } });
     if (url.pathname === '/api/quips' && req.method === 'POST') return readBody(async (body) => { try { const b = JSON.parse(body); json(await quips(textList(b.texts), b.lang === 'fr' ? 'fr' : 'en')); } catch (e) { json({ error: String(e) }, 400); } });
     if (url.pathname === '/api/sessions') return json(listSessions());
@@ -675,15 +696,17 @@ function start(port = PORT) {
       try { const ls = fs.lstatSync(fp); if (!CHAR_NAME.test(f) || !fp.startsWith(dir + path.sep) || !ls.isFile() || ls.size > CHAR_MAX) throw 0; } catch { res.writeHead(404); return res.end('not found'); }
       res.writeHead(200, { 'content-type': CHAR_TYPES[f.split('.').pop().toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache' }); return sendFile(fp);
     }
-    const file = path.join(PUBLIC, url.pathname === '/' ? 'index.html' : url.pathname);
+    const pathname = url.pathname.startsWith('/animals/') ? decodeURIComponent(url.pathname) : url.pathname;
+    const file = path.join(PUBLIC, pathname === '/' ? 'index.html' : pathname);
     let fst = null; try { fst = fs.statSync(file); } catch {}
     if (!file.startsWith(PUBLIC + path.sep) || !fst || !fst.isFile()) { res.writeHead(404); return res.end('not found'); }
-    res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
-    res.end(fs.readFileSync(file));
+    res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream' });
+    return sendFile(file);
   } catch (e) { if (res.headersSent) return res.destroy(); json({ error: String(e.message || e) }, 500); }
   }).listen(port, '127.0.0.1', function () { console.log(`Agent Standup → http://localhost:${this.address().port}`); });
 }
-module.exports = { start, currentSession, shutdown, findClaude, bundledClaude, boardRows, charactersDir, listCharacters };
+module.exports = { start, currentSession, shutdown, findClaude, bundledClaude, boardRows, charactersDir, listCharacters, retainTimelines,
+  timeline: (proj, id) => timelineEntry(proj, id).tl };
 if (require.main === module) {
   start().on('error', (e) => {
     console.error(e.code === 'EADDRINUSE' ? `Port ${PORT} is already in use (maybe Agent Standup is already running, e.g. inside VS Code). Try: PORT=4790 node server.js` : String(e));

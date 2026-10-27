@@ -152,7 +152,9 @@ test('the live call follows a Codex session: the newest session wins, a project 
     at(20000); fs.appendFileSync(fileOf(NEW), [ev({ type: 'task_started', turn_id: 'turn2' }), item({ type: 'UserMessage', id: 'item-9', content: [{ type: 'text', text: '# Files mentioned by the user:\n\n## shot.png: /tmp/shot.png\n\n## My request:\n<send_user_message_question_reply>Yes, ship it</send_user_message_question_reply>' }] }), (at(21000), item({ type: 'AgentMessage', id: 'msg_9', content: [{ type: 'text', text: 'Shipping.' }], phase: 'commentary' }))].join('\n') + '\n');
     await new Promise((r) => setTimeout(r, 1300));   // past the pauses in which a scan and a board are reused
     const more = (await get(s.port, `/api/session?proj=_codex&id=${NEW}&after=${full.seq}&ep=${full.ep}`)).json();
-    assert.deepEqual(more.events.map((e) => e.kind + ':' + e.text), ['user:Yes, ship it', 'say:Shipping.']); assert.ok(more.events.every((e) => !keys.includes(e.k)));
+    assert.deepEqual(more.events.map((e) => e.kind), ['results', 'user', 'say']);
+    assert.deepEqual(more.events[0].items, [{ id: 'call_ask_01', err: false, out: 'Yes, ship it' }]);
+    assert.deepEqual(more.events.slice(1).map(e => e.text), ['Yes, ship it', 'Shipping.']); assert.ok(more.events.every((e) => !keys.includes(e.k)));
     await new Promise((r) => setTimeout(r, 1300));
     assert.equal((await get(s.port, '/api/board')).json().find((r) => r.id === NEW).state, 'working');   // a turn is open again
   } finally { s.stop(); }

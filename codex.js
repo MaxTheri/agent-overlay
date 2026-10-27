@@ -52,7 +52,14 @@ function head(file) {
   const { text, whole, capped } = firstLine(file); let out = { ok: false, cwd: '', dir: '', child: false };
   if (!text) return out;   // not written yet: looked at again next time
   let p = null; try { const r = JSON.parse(text); if (r && r.type === 'session_meta' && r.payload && typeof r.payload === 'object') p = r.payload; } catch {}
-  if (p) out = { ok: true, cwd: typeof p.cwd === 'string' ? p.cwd : '', child: !!p.parent_thread_id || !!(p.source && typeof p.source === 'object' && p.source.subagent) };
+  if (p) {
+    const sub = p.source && typeof p.source === 'object' && p.source.subagent;
+    const spawn = sub && sub.thread_spawn;
+    out = { ok: true, cwd: typeof p.cwd === 'string' ? p.cwd : '', child: !!p.parent_thread_id || !!sub,
+      parent: p.parent_thread_id || (spawn && spawn.parent_thread_id) || '',
+      name: p.agent_nickname || (spawn && spawn.agent_nickname) || '', role: p.agent_role || (spawn && spawn.agent_role) || '',
+      review: /guardian|review|approval/i.test(p.thread_source || '') || !!(sub && sub.other && /guardian|review|approval/i.test(sub.other)) };
+  }
   else if (capped && /^\{"timestamp":"[^"]*","(?:ordinal":\d+,")?type":"session_meta"/.test(text)) {   // a first line longer than what was read: the two facts, without the rest
     const cwd = text.match(/"cwd":"((?:[^"\\]|\\.)*)"/); let c = ''; try { c = cwd ? JSON.parse('"' + cwd[1] + '"') : ''; } catch {}
     out = { ok: true, cwd: c, child: /"parent_thread_id":"[^"]+"/.test(text) || /"source":\{"subagent"/.test(text) };
@@ -98,21 +105,42 @@ function firstPrompt(r) {
   return out;
 }
 const title = (r) => threadNames().get(r.id) || firstPrompt(r) || r.id;
+// Actual delegated threads only. Automatic permission reviews stay hidden.
+function children(parent) {
+  const found = [], parents = new Set([parent]);
+  for (let depth = 0; depth < 8; depth++) {
+    const next = [];
+    for (const r of scan().rows) {
+      if (parents.has(r.id)) continue;
+      const h = head(r.file);
+      if (h.child && !h.review && h.parent && parents.has(h.parent)) next.push({ ...r, name: h.name, role: h.role });
+    }
+    if (!next.length) break;
+    for (const r of next) { parents.add(r.id); found.push(r); }
+  }
+  return found;
+}
 
 // ---- the board: is the agent in the middle of a turn, or is it the person's turn? Read from the end of the file.
 const tailCache = new Map();
 function boardRow(r, now) {
   const sig = r.mtime + ':' + r.size; let t = tailCache.get(r.file);
   if (!t || t.sig !== sig) {
-    t = { sig, turn: '' };
+    t = { sig, size: r.size, turn: t && r.size >= t.size ? t.turn : '', turnStartedAt: t && r.size >= t.size ? t.turnStartedAt : 0 };
     try {
       const fd = fs.openSync(r.file, 'r'); let text = ''; try { const n = Math.min(128 * 1024, r.size), buf = Buffer.alloc(n); fs.readSync(fd, buf, 0, n, r.size - n); text = buf.toString('utf8'); } finally { fs.closeSync(fd); }
-      for (const l of text.split('\n')) { const m = /"type":"(task_started|task_complete|turn_started|turn_complete|turn_aborted)"/.exec(l.slice(0, 400)); if (m && l.includes('"event_msg"')) t.turn = /started/.test(m[1]) ? 'open' : 'closed'; }
+      for (const l of text.split('\n')) {
+        let event; try { event = JSON.parse(l); } catch { continue; }
+        const type = event.payload?.type;
+        if (event.type !== 'event_msg' || !/^(task_started|task_complete|turn_started|turn_complete|turn_aborted)$/.test(type || '')) continue;
+        t.turn = /started/.test(type) ? 'open' : 'closed';
+        if (t.turn === 'open') t.turnStartedAt = Date.parse(event.timestamp) || 0;
+      }
     } catch {}
     if (tailCache.size > 200) tailCache.delete(tailCache.keys().next().value); tailCache.set(r.file, t);
   }
-  const age = now - r.mtime, state = age >= 30 * 60e3 ? 'idle' : t.turn === 'closed' ? 'turn' : age < 10 * 60e3 ? 'working' : 'idle';
-  return { proj: PROJ, id: r.id, title: title(r), mtime: r.mtime, state, tool: '', ageMs: age, subActive: 0, subTotal: 0, dir: r.dir, source: 'codex' };
+  const age = now - r.mtime, state = age >= 30 * 60e3 ? 'idle' : t.turn === 'closed' ? 'turn' : t.turn === 'open' || age < 10 * 60e3 ? 'working' : 'idle';
+  return { proj: PROJ, id: r.id, title: title(r), mtime: r.mtime, state, turnOpen: t.turn === 'open' && age < 30 * 60e3, turnStartedAt: t.turnStartedAt, tool: '', ageMs: age, subActive: 0, subTotal: 0, dir: r.dir, source: 'codex' };
 }
 
 // ---- one record of a rollout file → the events of the call
@@ -136,10 +164,17 @@ function parser({ toolLabel, clip, resultMax = {} }) {
     const push = (e) => { e.k = agent + ':' + st.raw.length; st.raw.push(e); if (e.ts > cx.last) cx.last = e.ts; return e; };
     const th = () => { const t = st.th; st.th = ''; return t ? { th: t } : {}; };
     const say = (text, final) => { const t = String(text == null ? '' : text).trim(); if (!t) return; const e = push({ ts, agent, kind: 'say', text: t, ...th() }); st.act = st.raw.length - 1; if (final && agent === 'main') e.end = 1; };
-    const user = (text) => { const t = typed(text); if (!t) return; push({ ts, agent: 'user', kind: 'user', text: t }); cx.userAt = st.raw.length - 1; };
-    const call = (id, name, input, at) => { const when = Math.max(Math.min(at || ts, ts), cx.last); st.toolName[id] = name; push({ ts: when, agent, kind: 'tool', tool: toolLabel({ id, name, input: input || {} }, when), ...th() }); st.act = st.raw.length - 1; };   // a command is placed when it started, never before what the file already said
+    const user = (text) => { const t = typed(text); if (!t) return; for (const id of cx.asyncQuestions || []) result(id, t); cx.asyncQuestions?.clear(); push({ ts, agent: 'user', kind: 'user', text: t }); cx.userAt = st.raw.length - 1; };
+    const call = (id, name, input, at) => { const when = Math.max(Math.min(at || ts, ts), cx.last); st.toolName[id] = name; push({ ts: when, agent, kind: 'tool', tool: { ...toolLabel({ id, name, input: input || {} }, when), ...(input?.asynchronous ? { asynchronous: true } : {}) }, ...th() }); st.act = st.raw.length - 1; };   // a command is placed when it started, never before what the file already said
     const result = (id, out, err) => { const n = st.toolName[id]; if (!n || NO_RESULT.has(n)) return; push({ ts, agent, kind: 'results', items: [{ id, err: !!err, out: clip(String(out == null ? '' : out).trimEnd(), resultMax[n] || (/^mcp__/.test(n) ? 900 : 600)) }] }); };
     const endTurn = () => { if (agent === 'main' && st.act > cx.userAt && st.raw[st.act]) st.raw[st.act].end = 1; };   // the turn is over (or was stopped): the last thing the lead said or did closes it
+    const ask = (id, questions, asynchronous) => {
+      if (st.toolName[id] === 'AskUserQuestion') return;
+      if (asynchronous) (cx.asyncQuestions ||= new Set()).add(id);
+      call(id, 'AskUserQuestion', { asynchronous, questions: (Array.isArray(questions) ? questions : []).map(q => ({
+        question: q?.question || q?.title || '', options: (Array.isArray(q?.options) ? q.options : []).map(o => typeof o === 'string' ? { label: o } : o),
+      })) });
+    };
 
     if (r.type === 'turn_context') { if (typeof p.model === 'string') cx.model = p.model; return; }
     if (r.type === 'compacted') { push({ ts, agent, kind: 'compact' }); return; }
@@ -147,7 +182,12 @@ function parser({ toolLabel, clip, resultMax = {} }) {
       if (p.type === 'item_completed' && p.item && typeof p.item === 'object') {
         const it = p.item, id = String(it.id || 'cx' + st.raw.length), at = +p.started_at_ms || 0; cx.items = true;
         if (it.type === 'UserMessage') user(partsText(it.content));
-        else if (it.type === 'AgentMessage') say(partsText(it.content), it.phase === 'final_answer');
+        else if (it.type === 'AgentMessage') {
+          // Async questions are delivered as final_answer messages before the
+          // user answers. They are requests, not completed assistant turns.
+          if (it.delivery === 'async' && Array.isArray(it.questions) && it.questions.length) ask(id, it.questions, true);
+          else say(partsText(it.content), it.phase === 'final_answer');
+        }
         else if (it.type === 'CommandExecution') { call(id, 'Bash', { command: shellText(it.command) }, at); result(id, it.aggregated_output != null ? it.aggregated_output : [it.stdout, it.stderr].filter(Boolean).join('\n'), it.status === 'failed' || (typeof it.exit_code === 'number' && it.exit_code !== 0)); }
         else if (it.type === 'FileChange') Object.entries(it.changes && typeof it.changes === 'object' ? it.changes : {}).forEach(([file, c], i) => {
           const cid = i ? id + ':' + i : id, kind = c && c.type, d = diffSides(c && c.unified_diff);
@@ -186,7 +226,15 @@ function parser({ toolLabel, clip, resultMax = {} }) {
     if (isCall && id) {
       let a = {}; if (p.type === 'custom_tool_call') a = { input: p.input }; else if (p.type === 'local_shell_call') a = p.action && typeof p.action === 'object' ? p.action : {}; else { try { const v = typeof p.arguments === 'string' ? JSON.parse(p.arguments) : p.arguments; if (v && typeof v === 'object') a = v; } catch {} }
       const n = String(p.name || (p.type === 'local_shell_call' ? 'shell' : ''));
-      if (/^request_user_input/.test(n)) { call(id, 'AskUserQuestion', { questions: (Array.isArray(a.questions) ? a.questions : []).map((q) => ({ question: (q && (q.question || q.title)) || '', options: (q && Array.isArray(q.options) && q.options) || [] })) }); return; }   // the agent asks the person something: in both generations
+      // Completed items arrive after approvals. Keep the raw approval request
+      // visible in the meantime, including exec wrappers used by desktop Codex.
+      const approval = a.sandbox_permissions === 'require_escalated' ||
+        (p.type === 'custom_tool_call' && n === 'exec' && /tools\.exec_command\(\s*\{[\s\S]*?["']?sandbox_permissions["']?\s*:\s*["']require_escalated["']/.test(String(p.input || '')));
+      if (approval) {
+        call(id, 'AskUserQuestion', { questions: [{ question: 'Autorisation requise pour exécuter une commande.' }] });
+        return;
+      }
+      if (/^request_user_input(?:_async)?$/.test(n)) { ask(id, a.questions, n.endsWith('_async')); return; }
       if (cx.items) return;
       if (/^(shell|shell_command|exec_command|local_shell|unified_exec|container\.exec)$/.test(n)) call(id, 'Bash', { command: shellText(a.command != null ? a.command : a.cmd) });
       else if (n === 'apply_patch') { const fl = patchFiles(a.input != null ? a.input : a.patch); if (!fl.length) call(id, 'Edit', { file_path: '', old_string: '', new_string: clip(a.input || a.patch || '', 500) }); if (fl.length > 1) (cx.more = cx.more || {})[id] = fl.length; fl.forEach((f, i) => { const cid = i ? id + ':' + i : id; if (f.type === 'add') call(cid, 'Write', { file_path: f.file, content: f.add }); else call(cid, 'Edit', { file_path: f.file, old_string: f.del, new_string: f.add }); }); }
@@ -198,6 +246,11 @@ function parser({ toolLabel, clip, resultMax = {} }) {
     if ((p.type === 'function_call_output' || p.type === 'custom_tool_call_output' || p.type === 'local_shell_call_output') && id) {
       if (cx.items && st.toolName[id] !== 'AskUserQuestion') return;   // in the current format the item already carried the output (an MCP call has the same id in both: it would be answered twice, the second time without its failure)
       let out = p.output, err = false;
+      if (cx.asyncQuestions?.has(id)) {
+        let ack = out; if (typeof ack === 'string') { try { ack = JSON.parse(ack); } catch {} }
+        if (ack?.accepted === true) return; // delivery acknowledgement, not the user's answer
+        cx.asyncQuestions.delete(id);
+      }
       if (typeof out === 'string' && out[0] === '{') { try { const j = JSON.parse(out); if (j && typeof j === 'object' && ('output' in j || 'metadata' in j)) { err = !!(j.metadata && typeof j.metadata.exit_code === 'number' && j.metadata.exit_code !== 0); out = j.output != null ? j.output : ''; } } catch {} }
       else if (out && typeof out === 'object' && !Array.isArray(out)) { err = out.success === false; out = out.content != null ? out.content : ''; }
       result(id, partsText(out), err); for (let i = 1; i < ((cx.more || {})[id] || 0); i++) result(id + ':' + i, '', err);
@@ -206,4 +259,4 @@ function parser({ toolLabel, clip, resultMax = {} }) {
     if (p.type === 'web_search_call' && !cx.items && id) call(id, 'WebSearch', { query: (p.action && p.action.query) || '' });
   };
 }
-module.exports = { PROJ, home, dirKey, sessions, row, fileOf, inProject, projectLabel, title, boardRow, parser };
+module.exports = { PROJ, home, dirKey, sessions, children, row, fileOf, inProject, projectLabel, title, boardRow, parser };

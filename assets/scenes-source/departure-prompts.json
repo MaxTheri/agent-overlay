@@ -1,0 +1,10 @@
+{
+  "tool": "built-in imagegen",
+  "prompt": "Use case: illustration-story. Production transparent animation sprite sheet EXACTLY SIXTEEN DISTINCT chronological full-body drawings in EXACT 4 columns x4 rows uniform grid. Reference is ONLY for exact character identity, outfit, proportions and polished hand-drawn cartoon style. Genuine ALPHA transparency as reference. No backdrop, glows, floor, text, numbers, borders or grid. New sequence: employee finishes, STANDS UP, picks up and THROWS THEIR LAPTOP OFFSCREEN TO THE RIGHT, RUBS HANDS together in satisfaction, then WALKS AWAY TO THE LEFT. IMPORTANT laptop itself is animated separately by the application: DO NOT DRAW ANY LAPTOP or prop in these poses; animate the mime action of picking up and tossing a closed laptop. No paper ball, no boss, no flames, smoke, wreckage or falling laptop. Row1 frames1-4 standing up: feet come down from an unseen desk, straightens torso, pushes up to fully upright, smiles satisfied. No desk/chair drawn. Row2 frames5-8 toss action: frame5 lean and reach BOTH paws toward a laptop on invisible desk at character's RIGHT at 68% cell height; frame6 grip invisible closed laptop with both paws and lift it to shoulder height on RIGHT; frame7 energetic swing toward RIGHT; frame8 extend/release with open paws toward RIGHT, followthrough, pleased relieved expression. Row3 frames9-12: character clearly RUBS BOTH PALMS TOGETHER at chest height, hands touching, alternates left palm forward/right backward then reverse, satisfied mischievous smile, shoulders relaxed; no clapping, no waving, no holding objects. Row4 frames13-16: four distinct walking-cycle drawings FACING LEFT, stepping in place, alternating feet and arms, subtle tail sway; no actual travel across individual cells, renderer translates character. Fixed full-body size, fixed feet baseline at94% cell height, crown near10%, comfortable room for hands and tail, no cropping. Keep same animal face, body, clothing as reference. One character only in each cell, consistent scale. Character key: ",
+  "characters": [
+    "ratel",
+    "renard",
+    "firefox",
+    "capybara"
+  ]
+}

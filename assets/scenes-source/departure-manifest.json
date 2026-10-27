@@ -1,0 +1,30 @@
+[
+  {
+    "source": "assets/scenes-source/departure-ratel-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/departures/ratel.png",
+    "preview": "assets/scenes-source/departure-ratel-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/departure-renard-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/departures/renard.png",
+    "preview": "assets/scenes-source/departure-renard-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/departure-firefox-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/departures/firefox.png",
+    "preview": "assets/scenes-source/departure-firefox-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/departure-capybara-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/departures/capybara.png",
+    "preview": "assets/scenes-source/departure-capybara-preview.png"
+  }
+]

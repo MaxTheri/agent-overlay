@@ -1,0 +1,26 @@
+[
+  {
+    "animal": "ratel",
+    "source": "assets/scenes-source/walk-ratel-source.png",
+    "output": "public/scenes/walks/ratel.png",
+    "preview": "assets/scenes-source/walk-ratel-preview.png"
+  },
+  {
+    "animal": "renard",
+    "source": "assets/scenes-source/walk-renard-source.png",
+    "output": "public/scenes/walks/renard.png",
+    "preview": "assets/scenes-source/walk-renard-preview.png"
+  },
+  {
+    "animal": "firefox",
+    "source": "assets/scenes-source/walk-firefox-source.png",
+    "output": "public/scenes/walks/firefox.png",
+    "preview": "assets/scenes-source/walk-firefox-preview.png"
+  },
+  {
+    "animal": "capybara",
+    "source": "assets/scenes-source/walk-capybara-source.png",
+    "output": "public/scenes/walks/capybara.png",
+    "preview": "assets/scenes-source/walk-capybara-preview.png"
+  }
+]

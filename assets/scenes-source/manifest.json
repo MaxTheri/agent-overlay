@@ -1,0 +1,30 @@
+[
+  {
+    "source": "assets/scenes-source/reaction-ratel-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/reactions/ratel.png",
+    "preview": "assets/scenes-source/reaction-ratel-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/reaction-renard-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/reactions/renard.png",
+    "preview": "assets/scenes-source/reaction-renard-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/reaction-firefox-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/reactions/firefox.png",
+    "preview": "assets/scenes-source/reaction-firefox-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/reaction-capybara-source.png",
+    "columns": 4,
+    "rows": 4,
+    "output": "public/scenes/reactions/capybara.png",
+    "preview": "assets/scenes-source/reaction-capybara-preview.png"
+  }
+]

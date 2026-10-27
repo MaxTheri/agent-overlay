@@ -1,0 +1,30 @@
+[
+  {
+    "source": "assets/scenes-source/paper-hit-ratel-source.png",
+    "columns": 4,
+    "rows": 2,
+    "output": "public/scenes/impacts/ratel.png",
+    "preview": "assets/scenes-source/paper-hit-ratel-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/paper-hit-renard-source.png",
+    "columns": 4,
+    "rows": 2,
+    "output": "public/scenes/impacts/renard.png",
+    "preview": "assets/scenes-source/paper-hit-renard-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/paper-hit-firefox-source.png",
+    "columns": 4,
+    "rows": 2,
+    "output": "public/scenes/impacts/firefox.png",
+    "preview": "assets/scenes-source/paper-hit-firefox-preview.png"
+  },
+  {
+    "source": "assets/scenes-source/paper-hit-capybara-source.png",
+    "columns": 4,
+    "rows": 2,
+    "output": "public/scenes/impacts/capybara.png",
+    "preview": "assets/scenes-source/paper-hit-capybara-preview.png"
+  }
+]
