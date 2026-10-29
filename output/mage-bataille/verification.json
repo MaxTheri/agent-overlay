@@ -1,0 +1,253 @@
+{
+  "frames": 40,
+  "size": [
+    594,
+    594
+  ],
+  "fps": 10,
+  "duration_ms": 4000,
+  "loop": 0,
+  "baseline_native_px": 174,
+  "registration": [
+    {
+      "frame": 1,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 2,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 3,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 4,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 5,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 6,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 7,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 8,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 9,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 10,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 11,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 12,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 13,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 14,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 15,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 16,
+      "baseline_source": 174,
+      "vertical_crop_offset": 0,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 17,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 18,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 19,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 20,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 21,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 22,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 23,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 24,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 25,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 26,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 27,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 28,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 29,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 30,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 31,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 32,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 33,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 34,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 35,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 36,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 37,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-epee"
+    },
+    {
+      "frame": 38,
+      "baseline_source": 173,
+      "vertical_crop_offset": -1,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 39,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    },
+    {
+      "frame": 40,
+      "baseline_source": 172,
+      "vertical_crop_offset": -2,
+      "source": "correction-personnage"
+    }
+  ]
+}

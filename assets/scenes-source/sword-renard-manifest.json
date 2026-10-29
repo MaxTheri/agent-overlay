@@ -1,0 +1,9 @@
+[
+  {
+    "source": "assets/scenes-source/sword-renard-source.png",
+    "columns": 4,
+    "rows": 2,
+    "output": "public/scenes/impacts/renard.png",
+    "preview": "assets/scenes-source/sword-renard-preview.png"
+  }
+]

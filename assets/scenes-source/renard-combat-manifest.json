@@ -1,0 +1,10 @@
+[
+  {
+    "source": "assets/scenes-source/renard-combat-20-source.png",
+    "columns": 4,
+    "rows": 5,
+    "frames": 20,
+    "output": "assets/scenes-source/renard-combat-frames.png",
+    "preview": "assets/scenes-source/renard-combat-preview.png"
+  }
+]

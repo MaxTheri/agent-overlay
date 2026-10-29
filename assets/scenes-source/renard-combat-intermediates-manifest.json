@@ -1,0 +1,9 @@
+[
+  {
+    "source": "assets/scenes-source/renard-combat-intermediates-source.png",
+    "columns": 4,
+    "rows": 5,
+    "output": "assets/scenes-source/renard-combat-intermediates.png",
+    "preview": "assets/scenes-source/renard-combat-intermediates-preview.png"
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "source": "assets/scenes-source/renard-combat-back-jump-source.png",
+    "columns": 4,
+    "rows": 2,
+    "output": "assets/scenes-source/renard-combat-back-jump-frames.png",
+    "preview": "assets/scenes-source/renard-combat-back-jump-preview.png"
+  }
+]

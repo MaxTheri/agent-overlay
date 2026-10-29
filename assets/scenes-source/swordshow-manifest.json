@@ -1,0 +1,10 @@
+[
+  {
+    "source": "assets/scenes-source/swordshow-renard-source.png",
+    "columns": 12,
+    "rows": 12,
+    "frames": 139,
+    "output": "assets/scenes-source/swordshow-renard-strip.png",
+    "preview": "assets/scenes-source/swordshow-renard-preview.png"
+  }
+]
