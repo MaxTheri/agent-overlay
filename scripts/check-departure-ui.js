@@ -27,11 +27,23 @@ app.whenReady().then(async()=>{
     assert.equal(info.laptop,false);assert.equal(info.open,'block');assert.equal(info.bubbleDisplay,'block');assert.equal(info.bubbleOpacity,time>=2600?'0':'1');assert.equal(info.paperVisible,time>=2600&&time<6200);
     if(time>=4200&&time<6200){assert.equal(info.paperForm,'ball');assert.ok(info.paperWidth<=20);assert.equal(info.paperFill,'#30343b');}
     assert.ok(info.width<=420);assert.deepEqual(info.errors,[]);
-    if(stage==='leaving')assert.ok(info.canvasLeft<info.deskLeft-80);
+    if(stage==='leaving')assert.ok(info.canvasLeft>info.deskLeft);
     if(!collapsed)fs.writeFileSync('/tmp/agent-overlay-departure/'+animal+'-'+stage+'-'+time+'.png',(await win.webContents.capturePage()).toPNG());
    }
   }
   const resumed=await inspect(0,'renard',false,'working');assert.equal(resumed.laptop,false);assert.equal(resumed.translated,'');assert.equal(resumed.bubbleTransform,'');assert.equal(resumed.paperVisible,false);assert.equal(resumed.bubbleOpacity,'1');
+  for(const collapsed of [false,true]) {
+   const positions=await win.webContents.executeJavaScript(`(async()=>{
+    const agents=[{id:'one',name:'One',state:'working',text:'Travail'}, {id:'two',name:'Two',state:'done',text:'Terminé',lastTs:Date.now()}];
+    render({agents,demo:true,collapsed:${collapsed}});
+    const before=document.querySelector('.agent').getBoundingClientRect();
+    agents[1]={...agents[1],state:'departing',departureAt:Date.now()};
+    render({agents,demo:true,collapsed:${collapsed}});
+    const after=document.querySelector('.agent').getBoundingClientRect();
+    return {before:{x:before.x,y:before.y,width:before.width,height:before.height},after:{x:after.x,y:after.y,width:after.width,height:after.height}};
+   })()`);
+   assert.deepEqual(positions.after,positions.before);
+  }
   const gone=await inspect(15000);assert.equal(gone.laptop,false);
   console.log(JSON.stringify({ok:true,characters:4,stages:5,collapsed:true,cancel:true}));
  }catch(e){console.error(e);process.exitCode=1;}

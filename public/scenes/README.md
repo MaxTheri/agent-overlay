@@ -1,8 +1,8 @@
 # Départ des agents
 
 Après deux minutes de repos, chaque agent se lève, saisit la bulle de discussion
-à sa gauche, la chiffonne entre ses mains, la lance puis part vers la gauche.
-Le PC et le bureau restent immobiles. La scène dure 14,2 secondes, dont huit secondes pour rejoindre la sortie. Une reprise du
+à sa gauche, la chiffonne entre ses mains, la lance puis part vers la droite.
+Le PC, le bureau et les autres agents restent immobiles. La scène dure 14,2 secondes, dont huit secondes pour rejoindre la sortie. Une reprise du
 travail annule le départ et restitue la bulle. Les demandes à l’utilisateur
 et les tours actifs restent affichés.
 

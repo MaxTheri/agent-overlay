@@ -53,7 +53,7 @@ footer { margin: 2px 108px 0 0; text-align: right; color: #9fadc0; text-shadow: 
 .collapsed .workstation { width: 88px; height: 88px; }
 .collapsed .bubble { display: none; }
 .empty .text { color: #b6c2d7; }
-.departing { position: relative; min-height: 140px; overflow: hidden; }
+.departing { position: relative; }
 .agent.departing .bubble { display: block; transform-origin: right bottom; pointer-events: none; z-index: 5; will-change: transform; }
 .departing .bubble > * { opacity: calc(1 - var(--paper-fold, 0)); }
 .departing .bubble::after { opacity: calc(1 - var(--paper-fold, 0)); }
@@ -64,11 +64,10 @@ footer { margin: 2px 108px 0 0; text-align: right; color: #9fadc0; text-shadow: 
 .departing .pet { margin-left: auto; }
 .departing .animal-character { z-index: 2; }
 .departing[data-departure="grabbing"] .animal-character { transform: scaleX(-1); }
+.departing[data-departure="leaving"] .animal-character { transform: scaleX(-1); }
 .departing .laptop-open { display: block; }
 .departing .laptop-closed, .departing .closed-computer, .departing .status-symbol { display: none; }
-.collapsed .departing .bubble { position: absolute; left: 0; bottom: 4px; width: calc(100% - 108px); }
-.collapsed .agent.departing { width: 100%; }
-.collapsed #agents:has(.departing) { flex-direction: column; }
+.collapsed .departing .bubble { position: absolute; left: -190px; bottom: 4px; width: 180px; }
 @media (prefers-reduced-motion: reduce) {
   .departing *, .departing .animal-character { animation: none !important; }
 }

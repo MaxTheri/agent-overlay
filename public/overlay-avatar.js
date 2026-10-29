@@ -46,7 +46,10 @@ const OverlayAvatars = (() => {
     return `<div class="workstation" aria-hidden="true"><canvas class="animal-character" width="336" height="256" data-animal="${name}"></canvas><svg class="fixed-desk" viewBox="0 0 256 256" data-desk-y="${deskY}"><g stroke="#403b39" stroke-width="3" stroke-linejoin="round"><path class="desk-legs" fill="#666967" d="${legs(deskY)}"/><g class="desk-surface" transform="translate(0 ${deskY-174})"><path fill="#c99764" d="M22 174l187-8 30 13-193 11-24-7z"/><path fill="#efd0a0" d="M22 174l187-8 30 10-193 9z"/><g class="laptop-open"><path fill="#b2b5bd" d="M47 168h107l15 6-116 5z"/><path fill="#9196a1" d="M23 146q-1-3 3-3h53q3 0 4 3l10 27H34z"/><path fill="#cdd0d6" stroke="none" d="M54 154c-4-3-7 0-6 4 1 4 5 6 8 4 3-2 1-6-2-8z"/></g><g class="laptop-closed"><path fill="#858c96" d="m151 166 63-3 15 8-64 3z"/><path fill="#c6cbd1" d="m151 164 63-3 15 7-64 3z"/></g></g></g></svg><svg class="closed-computer" viewBox="0 0 256 256"><g class="closed-placement" transform="translate(0 ${deskY-174})" stroke="#403b39" stroke-width="2" stroke-linejoin="round"><path fill="#858c96" d="m151 166 63-3 15 8-64 3z"/><path fill="#c6cbd1" d="m151 164 63-3 15 7-64 3z"/></g></svg></div><span class="status-symbol"></span>`;
   }
   function walk(canvas, elapsed, reduced) {
-    const distance = canvas.closest('.agent').clientWidth + 110;
+    const list = canvas.closest('#agents').getBoundingClientRect();
+    const pet = canvas.closest('.pet').getBoundingClientRect();
+    // Cover the distance to the right edge, including the sprite's full width.
+    const distance = list.right - pet.left + canvas.offsetWidth;
     const size = canvas.closest('.pet').querySelector('.workstation').offsetWidth;
     return OverlayDeparture.walkPose(elapsed, distance, 48 * size / 96, reduced);
   }

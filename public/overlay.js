@@ -115,7 +115,7 @@ function updateDeparture(el, elapsed, reduced) {
   paper.style.transform = `translate(${sheet.x}px, ${sheet.y}px) rotate(${sheet.rotation}deg)`;
   paper.dataset.frame = sheet.frame;
   paper.dataset.released = sheet.released;
-  canvas.style.translate = `${-OverlayAvatars.walk(canvas, elapsed, reduced).x}px 0`;
+  canvas.style.translate = `${OverlayAvatars.walk(canvas, elapsed, reduced).x}px 0`;
   // The edges buckle inward as the sheet becomes a compact irregular ball.
   const flat = [[2,2],[22,1],[43,2],[62,1],[63,21],[62,42],[63,62],[42,63],[21,62],[1,63],[2,42],[1,21]];
   const ball = [[10,8],[26,3],[40,7],[53,13],[60,26],[55,40],[46,55],[32,61],[17,54],[6,44],[3,29],[7,19]];

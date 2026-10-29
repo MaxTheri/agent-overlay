@@ -22,7 +22,7 @@ app.whenReady().then(async () => {
           const state = { agents: [{ id: 'walk-test', name: '${animal}', state: 'departing', text: 'Terminé', lastTs: 880000, departureAt: 1000000 }], demo: true, collapsed: ${collapsed} };
           render(state);
           const pet = document.querySelector('.pet'), canvas = pet.querySelector('canvas'), agent = pet.closest('.agent');
-          const distance = agent.clientWidth + 110;
+          const distance = document.querySelector('#agents').getBoundingClientRect().right - pet.getBoundingClientRect().left + canvas.offsetWidth;
           const stride = 48 * pet.querySelector('.workstation').offsetWidth / 96;
           const walked = (2 + (${column} + .1) / 8) * stride;
           const elapsed = 6200 + walked / distance * (OverlayDeparture.durationMs - 6200);
@@ -30,7 +30,7 @@ app.whenReady().then(async () => {
           for(let i=0;i<5;i++) await new Promise(requestAnimationFrame);
           const r = canvas.getBoundingClientRect();
           return { file: canvas.dataset.frame.split(':')[0], column: Number(canvas.dataset.frame.split(':').pop()),
-            x: -parseFloat(canvas.style.translate), walked, paperHidden: pet.querySelector('.departure-paper').hidden,
+            x: parseFloat(canvas.style.translate), walked, paperHidden: pet.querySelector('.departure-paper').hidden,
             crop: { x: Math.floor(r.x-4), y: Math.floor(r.y-4), width: Math.ceil(r.width+8), height: Math.ceil(r.height+8) },
             errors: window.overlayErrors };
         })()`);
